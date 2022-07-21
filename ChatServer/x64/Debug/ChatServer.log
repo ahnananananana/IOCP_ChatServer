@@ -1,0 +1,9 @@
+﻿  pch.cpp
+C:\Users\HURJM\Desktop\ChatServer\ChatCommon\struct.h(64,1): warning C4267: 'return': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\HURJM\Desktop\ChatServer\ChatCommon\struct.h(110,1): warning C4267: 'return': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\HURJM\Desktop\ChatServer\ChatCommon\struct.h(136,1): warning C4267: 'return': conversion from 'size_t' to 'int', possible loss of data
+  CChatServer.cpp
+  main.cpp
+C:\Users\HURJM\Desktop\ChatServer\ChatServer\CChatServer.cpp(40,20): warning C4018: '<': signed/unsigned mismatch
+C:\Users\HURJM\Desktop\ChatServer\ChatServer\main.cpp(185,3): warning C4065: switch statement contains 'default' but no 'case' labels
+  ChatServer.vcxproj -> C:\Users\HURJM\Desktop\ChatServer\Output\ChatServer.exe
