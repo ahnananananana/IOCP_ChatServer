@@ -1,8 +1,1 @@
-﻿  pch.cpp
-C:\Users\user\Desktop\IOCP_ChatServer\ChatCommon\struct.h(62,1): warning C4267: 'return': conversion from 'size_t' to 'int', possible loss of data
-C:\Users\user\Desktop\IOCP_ChatServer\ChatCommon\struct.h(159,1): warning C4267: 'return': conversion from 'size_t' to 'int', possible loss of data
-C:\Users\user\Desktop\IOCP_ChatServer\ChatCommon\struct.h(205,1): warning C4267: 'return': conversion from 'size_t' to 'int', possible loss of data
-  unity_NDSL4OUPZJS2XRX4.cpp
-C:\Users\user\Desktop\IOCP_ChatServer\ChatServer\CChatServer.cpp(40,20): warning C4018: '<': signed/unsigned mismatch
-C:\Users\user\Desktop\IOCP_ChatServer\ChatServer\main.cpp(185,3): warning C4065: switch statement contains 'default' but no 'case' labels
-  ChatServer.vcxproj -> C:\Users\user\Desktop\IOCP_ChatServer\Output\ChatServer.exe
+﻿

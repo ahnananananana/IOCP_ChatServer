@@ -156,8 +156,11 @@ void CUIClientMgr::Update()
         if (ImGui::InputText("##input", input_buf, 1024, ImGuiInputTextFlags_EnterReturnsTrue))
         {
             bSendChat = true;
-            m_pClient->SendChat(input_buf);
-            ZeroMemory(input_buf, 1024);
+            if (strlen(input_buf) > 0)
+            {
+                m_pClient->SendChat(input_buf);
+                ZeroMemory(input_buf, 1024);
+            }
         }
     }
     ImGui::End();
