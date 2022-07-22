@@ -35,8 +35,8 @@ public:
 	void Update();
 
 private:
-	void HandleConnection();
-	void HandleIO();
+	void HandleConnection(std::stop_token _token);
+	void HandleIO(std::stop_token _token);
 	tIOData* GetNewIOData();
 	void ReturnIOData(tIOData* _pIOData);
 

@@ -1,8 +1,8 @@
 ﻿  unity_NDSL4OUPZJS2XRX4.cpp
-C:\Users\user\Desktop\IOCP_ChatServer\ChatServer\CChatServer.cpp(40,20): warning C4018: '<': signed/unsigned mismatch
+C:\Users\user\Desktop\IOCP_ChatServer\ChatServer\CChatServer.cpp(42,20): warning C4018: '<': signed/unsigned mismatch
 C:\Users\user\Desktop\IOCP_ChatServer\ChatServer\main.cpp(185,3): warning C4065: switch statement contains 'default' but no 'case' labels
   Generating code
-  28 of 1487 functions ( 1.9%) were compiled, the rest were copied from previous compilation.
+  47 of 1509 functions ( 3.1%) were compiled, the rest were copied from previous compilation.
     7 functions were new in current compilation
     16 functions had inline decision re-evaluated but remain unchanged
   Finished generating code

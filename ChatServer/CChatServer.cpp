@@ -1,6 +1,8 @@
 #include "pch.h"
 #include "CChatServer.h"
 
+#include <functional>
+
 CChatServer::~CChatServer()
 {
 	m_connectionThread.request_stop();
@@ -39,7 +41,7 @@ void CChatServer::Init()
 	GetSystemInfo(&sysInfo);
 	for (int i = 0; i < sysInfo.dwNumberOfProcessors; ++i)
 	{
-		m_vecWorkerThreads.emplace_back(&CChatServer::HandleIO, this);
+		m_vecWorkerThreads.emplace_back(std::bind_front(&CChatServer::HandleIO, this));
 		m_vecWorkerThreads.back().detach();
 	}
 
@@ -65,13 +67,12 @@ void CChatServer::Init()
 	listen(hServSock, 5);
 
 	//Connetion용 쓰레드 생성
-	m_connectionThread = std::jthread(&CChatServer::HandleConnection, this);
+	m_connectionThread = std::jthread(std::bind_front(&CChatServer::HandleConnection, this));
 	m_connectionThread.detach();
 }
 
-void CChatServer::HandleConnection()
+void CChatServer::HandleConnection(std::stop_token _token)
 {
-	std::stop_token _token = m_connectionThread.get_stop_token();
 	SOCKADDR_IN clntAddr;
 	int iAddrLen = sizeof(clntAddr);
 
@@ -115,13 +116,13 @@ void CChatServer::HandleConnection()
 	}
 }
 
-void CChatServer::HandleIO()
+void CChatServer::HandleIO(std::stop_token _token)
 {
 	DWORD data_len;
 	tClientData* pSenderData;
 	tIOData* pIOData;
 
-	while (true)
+	while (!_token.stop_requested())
 	{
 		//IOCP 완료 대기
 		GetQueuedCompletionStatus(hIOCP, &data_len, (PULONG_PTR)&pSenderData, (LPOVERLAPPED*)&pIOData, INFINITE);
