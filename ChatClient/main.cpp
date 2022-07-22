@@ -61,7 +61,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
 	CChatClient chatClient;
 	chatClient.Init();
-	chatClient.TryConnect(L"127.0.0.1", 50000);
+	chatClient.TryConnect(L"13.124.69.200", 50000);
 
 	uiMgr.m_pClient = &chatClient;
 

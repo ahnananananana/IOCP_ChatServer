@@ -290,8 +290,6 @@ void CChatServer::HandleIO(std::stop_token _token)
 		//데이터 송신
 		else
 		{
-			OutputDebugString(L"Send\n");
-
 			ReturnIOData(pIOData);
 		}
 	}
