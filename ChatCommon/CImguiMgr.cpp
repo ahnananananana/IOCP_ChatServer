@@ -69,7 +69,7 @@ void CImguiMgr::Render()
 	ImGui::NewFrame();
 
 	Update();
-	ImGui::ShowDemoWindow();
+	//ImGui::ShowDemoWindow();
 
 	// Rendering
 	ImGui::Render();

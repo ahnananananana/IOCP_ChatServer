@@ -14,6 +14,7 @@ class CChatServer
 	SOCKET hServSock;
 	HANDLE hIOCP;
 
+	std::mutex m_client_data_mtx;
 	std::map<Client_ID, tClientData> m_mapClientData;
 	
 	std::mutex m_using_io_mtx;
@@ -34,8 +35,8 @@ public:
 	void Update();
 
 private:
-	void HandleConnection(std::stop_token _token);
-	void HandleIO(std::stop_token _token);
+	void HandleConnection();
+	void HandleIO();
 	tIOData* GetNewIOData();
 	void ReturnIOData(tIOData* _pIOData);
 

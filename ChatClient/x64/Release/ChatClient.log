@@ -1,0 +1,13 @@
+﻿  pch.cpp
+C:\Users\user\Desktop\IOCP_ChatServer\ChatCommon\struct.h(62,1): warning C4267: 'return': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\user\Desktop\IOCP_ChatServer\ChatCommon\struct.h(159,1): warning C4267: 'return': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\user\Desktop\IOCP_ChatServer\ChatCommon\struct.h(205,1): warning C4267: 'return': conversion from 'size_t' to 'int', possible loss of data
+  unity_AHDARRKASZWYRX1C.cpp
+C:\Users\user\Desktop\IOCP_ChatServer\ChatClient\CChatClient.h(31,41): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\user\Desktop\IOCP_ChatServer\ChatClient\main.cpp(190,3): warning C4065: switch statement contains 'default' but no 'case' labels
+C:\Users\user\Desktop\IOCP_ChatServer\ChatClient\utility.cpp(8,109): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+  Generating code
+  Previous IPDB not found, fall back to full compilation.
+  All 2589 functions were compiled because no usable IPDB/IOBJ from previous compilation was found.
+  Finished generating code
+  ChatClient.vcxproj -> C:\Users\user\Desktop\IOCP_ChatServer\Output\ChatClient.exe

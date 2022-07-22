@@ -1,1 +1,5 @@
-﻿  ChatClient.vcxproj -> C:\Users\HURJM\Desktop\ChatServer\Output\ChatClient.exe
+﻿  unity_AHDARRKASZWYRX1C.cpp
+C:\Users\user\Desktop\IOCP_ChatServer\ChatClient\CChatClient.h(31,41): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\user\Desktop\IOCP_ChatServer\ChatClient\main.cpp(190,3): warning C4065: switch statement contains 'default' but no 'case' labels
+C:\Users\user\Desktop\IOCP_ChatServer\ChatClient\utility.cpp(8,109): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+  ChatClient.vcxproj -> C:\Users\user\Desktop\IOCP_ChatServer\Output\ChatClient.exe

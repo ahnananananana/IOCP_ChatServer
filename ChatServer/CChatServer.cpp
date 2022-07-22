@@ -39,7 +39,7 @@ void CChatServer::Init()
 	GetSystemInfo(&sysInfo);
 	for (int i = 0; i < sysInfo.dwNumberOfProcessors; ++i)
 	{
-		m_vecWorkerThreads.emplace_back(&CChatServer::HandleIO, this, std::stop_token());
+		m_vecWorkerThreads.emplace_back(&CChatServer::HandleIO, this);
 		m_vecWorkerThreads.back().detach();
 	}
 
@@ -65,12 +65,13 @@ void CChatServer::Init()
 	listen(hServSock, 5);
 
 	//Connetion용 쓰레드 생성
-	m_connectionThread = std::jthread(&CChatServer::HandleConnection, this, std::stop_token());
+	m_connectionThread = std::jthread(&CChatServer::HandleConnection, this);
 	m_connectionThread.detach();
 }
 
-void CChatServer::HandleConnection(std::stop_token _token)
+void CChatServer::HandleConnection()
 {
+	std::stop_token _token = m_connectionThread.get_stop_token();
 	SOCKADDR_IN clntAddr;
 	int iAddrLen = sizeof(clntAddr);
 
@@ -78,76 +79,89 @@ void CChatServer::HandleConnection(std::stop_token _token)
 	{
 		//소켓 Accept
 		SOCKET hClntSock = accept(hServSock, (SOCKADDR*)&clntAddr, &iAddrLen);
+		if(_token.stop_requested())
+			break;
 
 		//새로운 클라이언트 정보 생성
+		m_client_data_mtx.lock();
 		tClientData& client_data = m_mapClientData[hClntSock];
+		m_client_data_mtx.unlock();
 		client_data.user_data.id = hClntSock;
 		client_data.socket = hClntSock;
 
 		//소켓과 IOCP 연결
 		CreateIoCompletionPort((HANDLE)hClntSock, hIOCP, (ULONG_PTR)&client_data, 0);
 
-		//새로운 클라이언트에게 채팅방에 있는 유저 정보 등 초기화에 필요한 데이터 전송
-		/*tChatInit chat_init;
+		//해당 소켓 수신 시작
+		ReceivePacket(hClntSock, GetNewIOData());
+
+		//새로운 클라이언트에게 채팅방에 있는 유저 정보와 ID 등 초기화에 필요한 데이터 전송
+		tChatInit chat_init;
 		chat_init.id = client_data.user_data.id;
-		for (auto& pair : m_mapClientData)
 		{
-			tClientData& cd = pair.second;
-			chat_init.other_user_data.emplace_back(cd.user_data);
+			std::lock_guard<std::mutex> lg(m_client_data_mtx);
+			for (auto& pair : m_mapClientData)
+			{
+				tClientData& cd = pair.second;
+				if (cd.user_data.id == client_data.user_data.id)
+					continue;
+				chat_init.other_user_data.emplace_back(cd.user_data);
+			}
 		}
 
-		int header_len = sizeof(tChatInit) - sizeof(tChatInit::other_user_data);
-		int data_size = chat_init.other_user_data.size() * sizeof(tUserData);*/
-
-		//chat_init.Serialize(ioInfo);
-
-		//memmove(ioInfo->wsaBuf.buf, &chat_init, header_len);
-		//memmove(ioInfo->wsaBuf.buf + header_len, chat_init.other_user_data.data(), data_size);
-
-		//WSASend(handleInfo->hClntSock, &(ioInfo->wsaBuf), 1, NULL, 0, &(ioInfo->overlapped), NULL);
-		
-		//해당 클라이언트에게 다음 데이터 수신 대기
-		/*tIOData* ioData = GetNewIOData();
-		ioData->wsaBuf.len = BUF_SIZE;
-		ioData->rwMode = READ;
-
-		DWORD recvBytes, flags = 0;
-		WSARecv(hClntSock, &(ioData->wsaBuf), 1, &recvBytes, &flags, &(ioData->overlapped), NULL);*/
-
-		ReceivePacket(hClntSock, GetNewIOData());
+		tIOData* pIOData = GetNewIOData();
+		pIOData->wsaBuf.len = chat_init.Serialize(pIOData->buffer);
+		SendPacket(client_data.socket, pIOData);
 	}
 }
 
-void CChatServer::HandleIO(std::stop_token _token)
+void CChatServer::HandleIO()
 {
-	DWORD bytesTrans;
+	DWORD data_len;
 	tClientData* pSenderData;
 	tIOData* pIOData;
 
-	while (!_token.stop_requested())
+	while (true)
 	{
 		//IOCP 완료 대기
-		GetQueuedCompletionStatus(hIOCP, &bytesTrans, (PULONG_PTR)&pSenderData, (LPOVERLAPPED*)&pIOData, INFINITE);
+		GetQueuedCompletionStatus(hIOCP, &data_len, (PULONG_PTR)&pSenderData, (LPOVERLAPPED*)&pIOData, INFINITE);
 
 		//전달받은 소켓
 		SOCKET sock = pSenderData->socket;
 
 		//유효한지 검사
+		m_client_data_mtx.lock();
 		auto iter = m_mapClientData.find(pSenderData->user_data.id);
 		if (iter == m_mapClientData.end())
 		{
+			m_client_data_mtx.unlock();
 			throw;
 		}
+		m_client_data_mtx.unlock();
+		tClientData& client_data = iter->second;
 
 		//데이터 수신
 		if (pIOData->rwMode == READ)
 		{
 			//연결 해제인 경우
-			if (bytesTrans == 0)
+			if (data_len == 0)
 			{
-				m_mapClientData.erase(pSenderData->user_data.id);
+				m_client_data_mtx.lock();
 				closesocket(sock);
 				ReturnIOData(pIOData);
+
+				tChatExit chat_exit;
+				chat_exit.client_id = client_data.user_data.id;
+				for (const auto& pair : m_mapClientData)
+				{
+					const tClientData& cd = pair.second;
+					
+					tIOData* pIOData = GetNewIOData();
+					pIOData->wsaBuf.len = chat_exit.Serialize(pIOData->buffer);
+					SendPacket(cd.socket, pIOData);
+				}
+				m_mapClientData.erase(iter);
+				m_client_data_mtx.unlock();
 				continue;
 			}
 
@@ -161,12 +175,40 @@ void CChatServer::HandleIO(std::stop_token _token)
 
 			switch (packet_type)
 			{
+			case EPACKET_TYPE::INIT_FINISH:
+			{
+				tChatInitFinish init_finish;
+				init_finish.Deserialize(buf, data_len);
+
+				memcpy(client_data.user_data.nick_name, init_finish.nick_name, MAX_NAME_LENGTH);
+
+				//다른 유저들에게 새로운 유저 정보 전파
+				tChatEnter chat_enter;
+				chat_enter.user_data = client_data.user_data;
+				chat_enter.enter_time = now;
+
+				m_client_data_mtx.lock();
+				for (auto pair : m_mapClientData)
+				{
+					tClientData& cd = pair.second;
+					if (cd.user_data.id == client_data.user_data.id)
+					{
+						continue;
+					} 
+
+					tIOData* pIOData = GetNewIOData();
+					pIOData->wsaBuf.len = chat_enter.Serialize(pIOData->wsaBuf.buf);
+					SendPacket(cd.socket, pIOData);
+				}
+				m_client_data_mtx.unlock();
+				break;
+			}
 				//채팅이 온 경우
 			case EPACKET_TYPE::CHAT_REQUEST:
 			{
 				//채팅 역직렬화
 				tChatRequest request;
-				request.Deserialize(buf, bytesTrans);
+				request.Deserialize(buf, data_len);
 
 				//응답 패킷 전송
 				{
@@ -188,6 +230,7 @@ void CChatServer::HandleIO(std::stop_token _token)
 					broadcast.data = std::move(request.data);
 					broadcast.chat_time = now;
 
+					m_client_data_mtx.lock();
 					for (auto& pair : m_mapClientData)
 					{
 						tClientData& cd = pair.second;
@@ -201,7 +244,38 @@ void CChatServer::HandleIO(std::stop_token _token)
 
 						SendPacket(cd.socket, pIOData);
 					}
+					m_client_data_mtx.unlock();
 				}
+				break;
+			}
+			case EPACKET_TYPE::CHANGE_NICK_NAME:
+			{
+				tChangeNickName change_nick_name;
+				change_nick_name.Deserialize(buf, data_len);
+
+				{
+					std::lock_guard<std::mutex> lg(m_client_data_mtx);
+					auto iter = m_mapClientData.find(change_nick_name.client_id);
+					if (iter == m_mapClientData.end())
+					{
+						throw;
+					}
+					tClientData& cd = m_mapClientData[change_nick_name.client_id];
+					memcpy(cd.user_data.nick_name, change_nick_name.new_nick_name, MAX_NAME_LENGTH);
+
+					for (const auto& pair : m_mapClientData)
+					{
+						const tClientData& cd = pair.second;
+						if(cd.user_data.id == change_nick_name.client_id)
+							continue;
+
+						tIOData* pIOData = GetNewIOData();
+
+						pIOData->wsaBuf.len = change_nick_name.Serialize(pIOData->buffer);
+						SendPacket(cd.socket, pIOData);
+					}
+				}
+
 				break;
 			}
 			default:

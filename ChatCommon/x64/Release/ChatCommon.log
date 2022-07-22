@@ -1,0 +1,8 @@
+﻿  pch2.cpp
+C:\Users\user\Desktop\IOCP_ChatServer\ChatCommon\struct.h(62,1): warning C4267: 'return': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\user\Desktop\IOCP_ChatServer\ChatCommon\struct.h(159,1): warning C4267: 'return': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\user\Desktop\IOCP_ChatServer\ChatCommon\struct.h(205,1): warning C4267: 'return': conversion from 'size_t' to 'int', possible loss of data
+  unity_DZQMPRWH7YEC85D4.cpp
+C:\Users\user\Desktop\IOCP_ChatServer\ChatCommon\CDirectxMgr.cpp(105,14): warning C4244: '=': conversion from 'UINT' to 'FLOAT', possible loss of data
+C:\Users\user\Desktop\IOCP_ChatServer\ChatCommon\CDirectxMgr.cpp(106,15): warning C4244: '=': conversion from 'UINT' to 'FLOAT', possible loss of data
+  ChatCommon.vcxproj -> C:\Users\user\Desktop\IOCP_ChatServer\Library\ChatCommon.lib
